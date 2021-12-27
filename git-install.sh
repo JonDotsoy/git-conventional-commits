@@ -1,5 +1,23 @@
 #!/usr/bin/env sh
 
+### Colors
+NOCOLOR='\033[0m'
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+ORANGE='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+LIGHTGRAY='\033[0;37m'
+DARKGRAY='\033[1;30m'
+LIGHTRED='\033[1;31m'
+LIGHTGREEN='\033[1;32m'
+YELLOW='\033[1;33m'
+LIGHTBLUE='\033[1;34m'
+LIGHTPURPLE='\033[1;35m'
+LIGHTCYAN='\033[1;36m'
+WHITE='\033[1;37m'
+
 function __run() {
   echo "Running > $1"
   eval $1
@@ -27,6 +45,12 @@ if [[ -z $GIT_ALIAS_SCOPE ]]; then
   GIT_ALIAS_SCOPE="scope$SUFIX"
 fi
 
+if [[ -z $GIT_ALIAS_BREAKING_CHANGE ]]; then
+  GIT_ALIAS_BREAKING_CHANGE="breaking-change$SUFIX"
+fi
+
+
+
 if [[ -z $REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_BASE ]]; then
   REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_BASE="https://github.com/JonDotsoy/git-conventional-commits/raw/$GIT_RELEASE_CONVENTIONAL_COMMIT"
 fi
@@ -51,12 +75,19 @@ __run "curl -L $REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_HELP_FILE -o $GIT_CONVENTION
 
 __run "git config --global --replace-all 'alias.$GIT_ALIAS_CONVENTIONAL_COMMIT' '$GIT_ALIAS_COMMAND'"
 __run "git config --global --replace-all 'alias.$GIT_ALIAS_SCOPE' '$GIT_ALIAS_CONVENTIONAL_COMMIT scope'"
+__run "git config --global --replace-all 'alias.$GIT_ALIAS_BREAKING_CHANGE' '$GIT_ALIAS_CONVENTIONAL_COMMIT breaking-change'"
+
+TERMAL_SYMBOL="$GREEN\$$NOCOLOR"
 
 echo
 echo "Installed 🎉"
 echo
 echo "To use, run:"
-echo "    $ git $GIT_ALIAS_SCOPE my-scope"
-echo "    $ git $GIT_ALIAS_CONVENTIONAL_COMMIT feat this is a message"
-echo "    feat: this is a message"
+echo "    ${TERMAL_SYMBOL} git $CYAN$GIT_ALIAS_SCOPE$NOCOLOR my-scope"
+echo "    ${TERMAL_SYMBOL} git $CYAN$GIT_ALIAS_CONVENTIONAL_COMMIT$NOCOLOR feat this is a message"
+echo "$YELLOW    [0101010] feat(my-scope): this is a message"
+echo "    ${TERMAL_SYMBOL} git $CYAN$GIT_ALIAS_SCOPE$NOCOLOR package"
+echo "    ${TERMAL_SYMBOL} git $CYAN$GIT_ALIAS_BREAKING_CHANGE$NOCOLOR on"
+echo "    ${TERMAL_SYMBOL} git $CYAN$GIT_ALIAS_CONVENTIONAL_COMMIT$NOCOLOR refactor change package manager"
+echo "$YELLOW    [1010101] refactor(package)!: change package manager"
 echo
