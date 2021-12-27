@@ -1,27 +1,62 @@
 #!/usr/bin/env sh
 
-PATH_COMMIT_BASE="$HOME/.commit_conventional_commits"
-PATH_COMMIT_SCRIPT="$HOME/.commit_conventional_commits/commit.sh"
+function __run() {
+  echo "Running > $1"
+  eval $1
+}
+
+if [[ -z $GIT_RELEASE_CONVENTIONAL_COMMIT ]]; then
+  GIT_RELEASE_CONVENTIONAL_COMMIT="development"
+fi
+
+if [[ -z $SUFIX ]]; then
+  if [[ $GIT_RELEASE_CONVENTIONAL_COMMIT == "master" || $GIT_RELEASE_CONVENTIONAL_COMMIT == "main" ]]; then
+    SUFIX=""
+  elif [[ $GIT_RELEASE_CONVENTIONAL_COMMIT == "development" ]]; then
+    SUFIX="-dev"
+  else
+    SUFIX="$GIT_RELEASE_CONVENTIONAL_COMMIT"
+  fi
+fi
+
+if [[ -z $GIT_ALIAS_CONVENTIONAL_COMMIT ]]; then
+  GIT_ALIAS_CONVENTIONAL_COMMIT="conventional-commit$SUFIX"
+fi
+
+if [[ -z $GIT_ALIAS_SCOPE ]]; then
+  GIT_ALIAS_SCOPE="scope$SUFIX"
+fi
+
+if [[ -z $REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_BASE ]]; then
+  REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_BASE="https://github.com/JonDotsoy/git-conventional-commits/raw/$GIT_RELEASE_CONVENTIONAL_COMMIT"
+fi
+
+if [[ -z $GIT_CONVENTIONAL_COMMIT_PATH_BASE ]]; then
+  GIT_CONVENTIONAL_COMMIT_PATH_BASE="$HOME/.git-conventional-commits-$GIT_RELEASE_CONVENTIONAL_COMMIT"
+fi
+
+REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_COMMIT_SCRIPT="$REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_BASE/conventional-commits.sh"
+GIT_CONVENTIONAL_COMMIT_PATH_COMMIT_SCRIPT="$GIT_CONVENTIONAL_COMMIT_PATH_BASE/conventional-commits.sh"
+REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_HELP_FILE="$REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_BASE/help.txt"
+GIT_CONVENTIONAL_COMMIT_PATH_HELP_FILE="$GIT_CONVENTIONAL_COMMIT_PATH_BASE/help.txt"
+
 GIT_ALIAS_COMMAND='!sh'
-GIT_ALIAS_COMMAND="$GIT_ALIAS_COMMAND $PATH_COMMIT_SCRIPT"
+GIT_ALIAS_COMMAND="$GIT_ALIAS_COMMAND $GIT_CONVENTIONAL_COMMIT_PATH_COMMIT_SCRIPT"
 
-mkdir -p $PATH_COMMIT_BASE
+# Installing...
 
-curl -L -o $PATH_COMMIT_SCRIPT https://gist.github.com/JonDotsoy/80f495333905a9b702fb681cd1a8faf2/raw/commit.sh
+__run "mkdir -p $GIT_CONVENTIONAL_COMMIT_PATH_BASE"
+__run "curl -L $REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_COMMIT_SCRIPT -o $GIT_CONVENTIONAL_COMMIT_PATH_COMMIT_SCRIPT"
+__run "curl -L $REMOTE_GIT_CONVENTIONAL_COMMIT_PATH_HELP_FILE -o $GIT_CONVENTIONAL_COMMIT_PATH_HELP_FILE"
 
-git config --global --replace-all alias.conventional-commit "$GIT_ALIAS_COMMAND"
-git config --global --replace-all alias.m "conventional-commit"
-git config --global --replace-all alias.scope "conventional-commit scope"
-git config --global --replace-all alias.bc "conventional-commit breaking-change"
-git config --global --replace-all alias.breaking-change "conventional-commit breaking-change"
+__run "git config --global --replace-all 'alias.$GIT_ALIAS_CONVENTIONAL_COMMIT' '$GIT_ALIAS_COMMAND'"
+__run "git config --global --replace-all 'alias.$GIT_ALIAS_SCOPE' '$GIT_ALIAS_CONVENTIONAL_COMMIT scope'"
 
-echo ""
-echo "Success installed 🎉"
-echo ""
-echo "To use, just run:"
-echo ""
-echo "    git scope <scope>"
-echo ""
-echo "    git m <type> <message>"
-echo ""
-
+echo
+echo "Installed 🎉"
+echo
+echo "To use, run:"
+echo "    $ git $GIT_ALIAS_SCOPE my-scope"
+echo "    $ git $GIT_ALIAS_CONVENTIONAL_COMMIT feat this is a message"
+echo "    feat: this is a message"
+echo
